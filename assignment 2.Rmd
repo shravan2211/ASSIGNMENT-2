@@ -1,0 +1,77 @@
+---
+title: "Feb 5 (Assignment)"
+output: html_document
+
+```
+
+## Read the data set
+```{r}
+data = read.csv( "https://www.stats.govt.nz/assets/Uploads/Government-finance-statistics-general-government/Government-finance-statistics-general-government-Year-ended-June-2020/Download-data/government-finance-statistics-general-government-year-ended-june-2020-csv.csv" 
+stringAsFacrors = TRUE)
+data
+head(data)
+## to find the data types of the variables
+str(data)
+```
+```{r}
+## create a 3*3 Matrix
+A = matrix(c(4, 5, 7, 8, 0, 9, 5, 4, 8) ,3, 3)
+A
+#transpose
+A_transpose = t(A)
+A_transpose
+```
+```{r}
+## Create a new matrix of same order naming it as B
+B = matrix(c(14, 52, 75, 89, 10, 91, 51, 44, 28),3, 3 )
+B
+#Addition of two matrix A and B
+A + B
+# Subtraction 
+A - B
+
+#Multipilcation
+A * B
+
+#DIVISION
+A / B
+```
+```{r}
+#performing vector operations
+V1 = c(1, 2, 3, 4, 5, 6, 7)
+V2 = c(7, 6, 5, 4, 3, 2, 1)
+V1
+V2
+
+V1 + V2
+V1 - V2
+V1 * V2
+V1 / V2
+
+cbind(V1, V2)
+
+rbind(V1)
+
+as.numeric(V1)
+
+as.character(V1)
+``
+```{r}
+employee_data <- data.frame(
+  employee_id = c (1:8),
+  employee_name = c("RICK","DAN","MICHELLE","RYAN","GARY","NINA", "SIMON","GURU"),
+  salary = c(623.3,515.2,611.0,729.0,843.25,578,632.8,722.5),
+  start_date = as.Date(c("2012-01-01", "2013-09-23", "2014-11-15", "2014-05-11","2015-03-27", "2013-05-21", "2013-07-30", "2014-06-17"),
+  dept = c("IT","OPERATIONS","IT","HR","FINANCE","IT","OPERATIONS","FINANCE")),
+  stringsAsFactors = FALSE)
+  employee_data
+print(employee_data)
+```
+  
+  
+
+
+
+
+
+ 
