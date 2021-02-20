@@ -1,0 +1,214 @@
+---
+title: " World cup data"
+
+
+output: html_notebook
+---
+
+. 
+
+```{r}
+library(readr)
+world_cup_comparisons <- read_csv("world cup data/world_cup_comparisons.csv")
+head(world_cup_comparisons)
+```
+```{r}
+str(world_cup_comparisons)
+```
+
+
+```{r}
+dim(world_cup_comparisons)
+```
+```{r}
+summary(world_cup_comparisons)
+```
+```{r}
+##Checking missing values
+is.na(world_cup_comparisons)
+summary(is.na(world_cup_comparisons))
+colSums(is.na(world_cup_comparisons))
+```
+
+```{r}
+##identifying less than 3 values
+any(world_cup_comparisons$goals_z>3)
+any(world_cup_comparisons$aerials_z>3)
+any(world_cup_comparisons$passes_z>3)
+```
+```{r}
+library(ggplot2)
+library(caret)
+library(caretEnsemble)
+library(VIM)
+library(gridExtra)
+library(cowplot)
+library(data.table)
+library(corrplot)
+library(e1071)
+library(xgboost)
+```
+
+```{r}
+## Relation ship between goals_z and season
+library(ggplot2)
+ggplot(world_cup_comparisons, aes(x= goals_z, y = season)) + 
+  geom_point(size = 1, color="black") + 
+  xlab("goals_z ") + ylab("season") + 
+  ggtitle("goals_z  vs season ") 
+  theme_linedraw()
+```
+```{r}
+# fouls_z vs season
+ggplot(world_cup_comparisons, aes(fouls_z, season)) + 
+  geom_bar( stat = "identity",color = "blue") +
+  theme(axis.text.x = element_text(angle = 70, vjust = 2, color = "navy")) + 
+  xlab("fouls_z") + ylab("season")+
+  ggtitle("fouls_z  vs season") +
+  theme_linedraw()
+  ggtitle("fouls_z vs season") + theme_bw()
+```
+```{r}
+ggplot(world_cup_comparisons, aes(interceptions_z, season)) + 
+  geom_bar( stat = "identity",color = "blue") +
+  theme(axis.text.x = element_text(angle = 70, vjust = 2, color = "navy")) + 
+  xlab("interceptions_z") + ylab("season")+
+  ggtitle("interceptions_z  vs season") +
+  theme_linedraw()
+```
+```{r}
+ggplot(world_cup_comparisons, aes(boxtouches_z, season)) + 
+  geom_bar( stat = "identity",color = "blue") +
+  theme(axis.text.x = element_text(angle = 70, vjust = 2, color = "navy")) + 
+  xlab("boxtouches_z") + ylab("season")+
+  ggtitle("boxtouches_z  vs season") +
+  theme_linedraw()
+```
+
+##spliting data sets into "training" (80%) and "testing"(20%)
+```{r}
+ind <- sample(2, nrow(world_cup_comparisons),replace = TRUE, prob = c(0.8,0.2))
+training_data <- world_cup_comparisons[ind==1,]
+testing_data <- world_cup_comparisons[ind==2,]
+head(training_data)
+head(testing_data)
+
+```
+```{r}
+#Checking Dim of test and train data
+dim(training_data)
+dim(testing_data)
+```
+```{r}
+# combine the data sets.
+
+combi <- rbind(training_data, testing_data)
+dim(combi)
+```
+### Impute missing value 
+
+```{r}
+#Impute missing value by median
+combi$passes_z [is.na(combi$passes_z )] <- median(combi$passes_z , na.rm = TRUE)
+combi$passes_z [is.na(combi$passes_z )]
+table(is.na(combi$passes_z ))
+```
+```{r}
+combi$goals_z [is.na(combi$goals_z )] <- median(combi$goals_z , na.rm = TRUE)
+combi$goals_z [is.na(combi$goals_z )]
+table(is.na(combi$goals_z ))
+```
+```{r}
+combi$xg_z [is.na(combi$xg_z )] <- median(combi$xg_z , na.rm = TRUE)
+combi$xg_z [is.na(combi$xg_z )]
+table(is.na(combi$xg_z ))
+```
+```{r}
+combi$crosses_z [is.na(combi$crosses_z )] <- median(combi$crosses_z , na.rm = TRUE)
+combi$crosses_z [is.na(combi$crosses_z )]
+table(is.na(combi$crosses_z ))
+```
+
+```{r}
+combi$boxtouches_z [is.na(combi$boxtouches_z )] <- median(combi$boxtouches_z , na.rm = TRUE)
+combi$boxtouches_z [is.na(combi$boxtouches_z )]
+table(is.na(combi$boxtouches_z ))
+```
+
+```{r}
+combi$progpasses_z [is.na(combi$progpasses_z )] <- median(combi$progpasses_z , na.rm = TRUE)
+combi$progpasses_z [is.na(combi$progpasses_z )]
+table(is.na(combi$progpasses_z ))
+```
+```{r}
+combi$takeons_z  [is.na(combi$takeons_z  )] <- median(combi$takeons_z  , na.rm = TRUE)
+combi$takeons_z  [is.na(combi$takeons_z  )]
+table(is.na(combi$takeons_z  ))
+```
+```{r}
+combi$progruns_z  [is.na(combi$progruns_z )] <- median(combi$progruns_z  , na.rm = TRUE)
+combi$progruns_z  [is.na(combi$progruns_z  )]
+table(is.na(combi$progruns_z  ))
+```
+```{r}
+combi$tackles_z  [is.na(combi$tackles_z)] <- median(combi$tackles_z  , na.rm = TRUE)
+combi$tackles_z  [is.na(combi$tackles_z  )]
+table(is.na(combi$tackles_z  ))
+```
+```{r}
+combi$interceptions_z  [is.na(combi$interceptions_z)] <- median(combi$interceptions_z  , na.rm = TRUE)
+combi$interceptions_z  [is.na(combi$interceptions_z )]
+table(is.na(combi$interceptions_z ))
+```
+```{r}
+combi$clearances_z  [is.na(combi$clearances_z)] <- median(combi$clearances_z  , na.rm = TRUE)
+combi$clearances_z  [is.na(combi$clearances_z )]
+table(is.na(combi$clearances_z ))
+```
+```{r}
+combi$blocks_z [is.na(combi$blocks_z)] <- median(combi$blocks_z  , na.rm = TRUE)
+combi$blocks_z  [is.na(combi$blocks_z )]
+table(is.na(combi$blocks_z))
+```
+
+```
+```{r}
+combi$aerials_z[is.na(combi$aerials_z)] <- median(combi$aerials_z  , na.rm = TRUE)
+combi$aerials_z  [is.na(combi$aerials_z )]
+table(is.na(combi$aerials_z))
+```
+```{r}
+summary(combi)
+```
+```{r}
+glimpse(world_cup_comparisons)
+```
+Imputing Missing Values
+```{r}
+#Using kNN imputation for missing values
+world_cup_comparisons_imputed <- kNN(world_cup_comparisons)
+world_cup_comparisons_imputed <- world_cup_comparisons_imputed %>% 
+    select(nsxg_z :player)
+summary(world_cup_comparisons_imputed)
+summary(is.na(world_cup_comparisons_imputed))
+```
+# Visualizing Data
+```{r}
+# World cup Season comparison Boxplot
+ggplot(world_cup_comparisons_imputed, aes(x =aerials_z ,y = season)) +
+  geom_boxplot() +
+  labs(title = "season by aerials_z", x = "aerials_z", y = "season") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
+```{r}
+ggplot(world_cup_comparisons_imputed, aes(x =interceptions_z ,y = season)) +
+  geom_bin2d() +
+  facet_wrap(~ boxtouches_z) +
+  labs(title = "season by interceptions_z and boxtouches_z",
+       x = "interceptions_z",
+       y = "season")
+```
+```{r}
+
+
